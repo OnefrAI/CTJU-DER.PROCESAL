@@ -1,0 +1,1114 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cuestionario Interactivo</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    .option-button {
+      transition: background-color 0.3s ease, transform 0.1s ease;
+    }
+    .option-button:hover {
+      background-color: #e0f2fe;
+    }
+    .option-button:active {
+      transform: scale(0.98);
+    }
+    .correct {
+      background-color: #dcfce7 !important;
+      border-color: #16a34a;
+      color: #15803d;
+    }
+    .incorrect {
+      background-color: #fee2e2 !important;
+      border-color: #dc2626;
+      color: #b91c1c;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 p-4 md:p-8">
+  <div class="container mx-auto max-w-4xl bg-white p-6 md:p-8 rounded-lg shadow-lg">
+    <h1 class="text-2xl md:text-3xl font-bold mb-6 text-center">Cuestionario Interactivo</h1>
+    
+    <!-- Sección para seleccionar el tema -->
+    <div id="topic-selection" class="mb-6">
+      <label for="theme-select" class="block text-sm font-medium mb-2">Selecciona el Tema:</label>
+      <select id="theme-select" class="w-full p-2 border border-gray-300 rounded-md">
+        <option value="tema1">TEMA 1</option>
+        <option value="tema2">TEMA 2</option>
+        <option value="tema3">TEMA 3</option>
+        <option value="tema4">TEMA 4</option>
+        <option value="tema5">TEMA 5</option>
+        <option value="tema6">TEMA 6</option>
+      </select>
+    </div>
+    
+    <div class="text-center mb-6">
+      <button id="start-quiz-btn" class="bg-purple-600 text-white font-bold py-3 px-6 rounded-lg">Iniciar Cuestionario</button>
+      <p id="start-error" class="text-red-600 text-sm mt-2 hidden">No se han cargado preguntas.</p>
+    </div>
+    
+    <!-- Sección del quiz -->
+    <div id="quiz-section" class="hidden p-6 border border-gray-200 rounded-lg">
+      <div id="quiz-content">
+        <p id="question-number" class="text-sm mb-2"></p>
+        <p id="quiz-question-text" class="text-lg font-medium mb-4"></p>
+        <div id="quiz-options" class="space-y-3 mb-4"></div>
+        <div id="feedback" class="mt-4 p-3 rounded-md text-center font-medium hidden"></div>
+      </div>
+      
+      <div id="quiz-navigation" class="mt-6 flex justify-between items-center">
+        <button id="next-question-btn" class="bg-green-600 text-white font-bold py-2 px-4 rounded-md hidden">Siguiente Pregunta</button>
+        <button id="restart-quiz-btn" class="bg-gray-500 text-white font-bold py-2 px-4 rounded-md hidden">Volver a Empezar</button>
+      </div>
+      
+      <div id="quiz-results" class="hidden mt-6 text-center">
+        <h3 class="text-xl font-semibold"></h3>
+        <p class="text-lg mt-2"></p>
+        <button id="restart-quiz-btn-end" class="mt-4 bg-blue-600 text-white font-bold py-2 px-4 rounded-md">Intentar de Nuevo</button>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    // Banco de preguntas completo
+    const questionBank = {
+      "tema1": [
+        {
+          "question": "Según el artículo 4 de la LOPJ, ¿a qué se extiende la jurisdicción española inicialmente?",
+          "options": [
+            "Solo a ciudadanos españoles y materias penales dentro del territorio nacional.",
+            "A todas las personas, a todas las materias y a todo el territorio español.",
+            "A los delitos cometidos por españoles en cualquier lugar del mundo.",
+            "A las materias civiles y mercantiles con conexión con España."
+          ],
+          "correct": 1
+        },
+        {
+          "question": "¿Qué se entiende por \"fuero\" desde el punto de vista procesal, según el texto?",
+          "options": [
+            "La nacionalidad del acusado en un litigio.",
+            "La vinculación de un litigio a un determinado territorio.",
+            "La materia específica que se debate en un juicio.",
+            "El tipo de tribunal competente para un caso."
+          ],
+          "correct": 1
+        },
+        {
+          "question": "¿Qué principio establece que la jurisdicción española será competente para el conocimiento de las causas por delitos cometidos en el territorio español, incluyendo su mar territorial y aeronaves de bandera española?",
+          "options": [
+            "Principio de personalidad activa.",
+            "Principio real o de protección.",
+            "Principio de territorialidad.",
+            "Principio de jurisdicción universal."
+          ],
+          "correct": 2
+        },
+        {
+          "question": "¿Cuál es uno de los fundamentos del principio de personalidad activa?",
+          "options": [
+            "La necesidad de juzgar delitos cometidos contra nacionales españoles en el extranjero.",
+            "La soberanía del Estado sobre su territorio.",
+            "La necesidad de evitar la impunidad de los nacionales que delinquen en el extranjero.",
+            "La protección de bienes jurídicos de vital importancia para la soberanía del Estado."
+          ],
+          "correct": 2
+        },
+        {
+          "question": "Según el artículo 23.2 de la LOPJ, ¿qué requisito se exige generalmente para que la jurisdicción española conozca de un delito cometido fuera del territorio nacional por un español?",
+          "options": [
+            "Que la víctima sea de nacionalidad española.",
+            "Que el hecho sea punible en el lugar de comisión (principio de doble incriminación).",
+            "Que el delito atente contra intereses fundamentales del Estado español.",
+            "Que el delincuente se encuentre en territorio español."
+          ],
+          "correct": 1
+        },
+        {
+          "question": "¿Qué principio de jurisdicción se basa en la nacionalidad del bien jurídico lesionado por el delito, vinculado a los intereses de España?",
+          "options": [
+            "Principio de personalidad pasiva.",
+            "Principio de personalidad activa.",
+            "Principio real o de protección.",
+            "Principio de territorialidad."
+          ],
+          "correct": 2
+        },
+        {
+          "question": "¿Qué caracteriza fundamentalmente al principio de jurisdicción universal en su concepción más pura?",
+          "options": [
+            "Se basa en la nacionalidad del autor del delito.",
+            "Se basa en el lugar donde se cometió el delito.",
+            "Se basa exclusivamente en la naturaleza del delito, prescindiendo de otros nexos.",
+            "Requiere que la víctima sea nacional del Estado que ejerce la jurisdicción."
+          ],
+          "correct": 2
+        },
+        {
+          "question": "¿Cuál se señala en el texto como el fundamento principal de la jurisdicción universal?",
+          "options": [
+            "La necesidad de proteger a los nacionales en el extranjero.",
+            "La soberanía de los Estados para perseguir cualquier delito.",
+            "La especial naturaleza de ciertos crímenes que afectan a la comunidad internacional.",
+            "La obligación de los Estados de extraditar a los criminales."
+          ],
+          "correct": 2
+        },
+        {
+          "question": "¿Cómo se califica la jurisdicción universal en la redacción original de la LOPJ de 1985 según el texto?",
+          "options": [
+            "Limitada por la necesidad de un vínculo con España.",
+            "Condicionada a la existencia de víctimas españolas.",
+            "Absoluta, sin exigencia de ningún vínculo con el Estado español.",
+            "Supeditada a la decisión de la Corte Penal Internacional."
+          ],
+          "correct": 2
+        },
+        {
+          "question": "¿Qué importante modificación se introdujo en la aplicación de la justicia universal mediante la LO 1/2009?",
+          "options": [
+            "Se eliminó la posibilidad de perseguir delitos cometidos fuera de España.",
+            "Se exigió que los presuntos responsables se encontraran en España o que existieran víctimas de nacionalidad española o algún vínculo relevante con España.",
+            "Se amplió el catálogo de delitos que podían ser perseguidos bajo este principio sin restricciones.",
+            "Se estableció que solo el Ministerio Fiscal podría interponer querella en casos de jurisdicción universal."
+          ],
+          "correct": 1
+        },
+        {
+          "question": "¿Qué cambio fundamental introdujo la LO 1/2014 en relación con la jurisdicción universal en España?",
+          "options": [
+            "Se volvió al sistema de jurisdicción universal absoluta de 1985.",
+            "Se simplificaron los requisitos para perseguir crímenes internacionales.",
+            "Se estableció un listado de delitos que pueden ser perseguidos con requisitos y puntos de conexión específicos para cada uno.",
+            "Se eliminó la necesidad de querella del agraviado o del Ministerio Fiscal."
+          ],
+          "correct": 2
+        },
+        {
+          "question": "¿Qué implicó la Disposición Transitoria de la LO 1/2014 para las causas en curso relacionadas con la jurisdicción universal?",
+          "options": [
+            "Continuaron su tramitación sin cambios.",
+            "Fueron remitidas a la Corte Penal Internacional.",
+            "Quedaron sobreseídas hasta que se acreditara el cumplimiento de los nuevos requisitos.",
+            "Se permitió la acción popular para su continuación."
+          ],
+          "correct": 2
+        },
+        {
+          "question": "¿Qué se critica en el texto respecto a las reformas de la jurisdicción universal en España posteriores a 2009?",
+          "options": [
+            "Que fortalecieron el principio de lucha contra la impunidad a nivel internacional.",
+            "Que facilitaron la persecución de crímenes internacionales por los tribunales españoles.",
+            "Que supusieron un retroceso en el principio de jurisdicción universal y pusieron en peligro las relaciones diplomáticas de España.",
+            "Que ampliaron la capacidad de las asociaciones de derechos humanos para presentar querellas."
+          ],
+          "correct": 2
+        },
+        {
+          "question": "¿Qué novedad introdujo la LO 9/2021 en relación con el artículo 23.2 LOPJ?",
+          "options": [
+            "Modificó los delitos que pueden ser perseguidos bajo el principio de territorialidad.",
+            "Introdujo una referencia a la Fiscalía Europea en el requisito de la querella.",
+            "Eliminó el principio de doble incriminación para ciertos delitos.",
+            "Amplió los supuestos de inmunidad de jurisdicción."
+          ],
+          "correct": 1
+        },
+        {
+          "question": "¿Qué se menciona en el texto como un posible origen histórico del principio de jurisdicción universal?",
+          "options": [
+            "La persecución de delitos de genocidio tras la Segunda Guerra Mundial.",
+            "La lucha contra el terrorismo internacional.",
+            "La persecución de la piratería cometida en alta mar.",
+            "La protección de los derechos humanos fundamentales."
+          ],
+          "correct": 2
+        }
+      ],
+      "tema2": [
+        {
+          "question": "¿Cuál ha sido una de las principales características de la evolución del Derecho en el siglo XX, según las fuentes?",
+          "options": [
+            "Un aislamiento progresivo de las soberanías estatales.",
+            "Una disminución de las relaciones entre los distintos países.",
+            "La internacionalización.",
+            "Una menor necesidad de cooperación internacional."
+          ],
+          "correct": 2
+        },
+        {
+          "question": "¿Qué institución europea es destacada en las fuentes por la importancia del Convenio Europeo de Derechos Humanos?",
+          "options": [
+            "La Unión Europea.",
+            "El Tribunal de Justicia de la Unión Europea.",
+            "El Consejo de Europa.",
+            "La Fiscalía Europea."
+          ],
+          "correct": 2
+        },
+        {
+          "question": "¿En qué tratado internacional entre los miembros de la Unión Europea se planteó una acción común sobre cooperación judicial en materia penal?",
+          "options": [
+            "El Tratado de Maastricht.",
+            "El Tratado de Lisboa.",
+            "El Tratado de Ámsterdam de 1997.",
+            "El Tratado de Niza."
+          ],
+          "correct": 2
+        },
+        {
+          "question": "¿Qué principio se proclamó en el Consejo Europeo de Tampere (Finlandia) de octubre de 1999 como \"piedra angular de la cooperación judicial, tanto civil como penal, entre los Estados miembros\"?",
+          "options": [
+            "El principio de subsidiariedad.",
+            "El principio de proporcionalidad.",
+            "El principio de reconocimiento mutuo de decisiones de los tribunales.",
+            "El principio de autonomía procesal."
+          ],
+          "correct": 2
+        },
+        {
+          "question": "¿Qué implica el principio de reconocimiento mutuo en el seno de la Unión Europea?",
+          "options": [
+            "Que las resoluciones de un Estado miembro deben ser revisadas exhaustivamente por los demás Estados miembros.",
+            "Que cada Estado miembro puede decidir discrecionalmente si acepta o no las resoluciones de otros Estados miembros.",
+            "Que una resolución adoptada por un juez en un Estado miembro será aceptada por los demás Estados miembros y surtirá efectos similares a las de una resolución del propio país.",
+            "Que solo se aceptarán las resoluciones que coincidan plenamente con la legislación del Estado receptor."
+          ],
+          "correct": 2
+        },
+        {
+          "question": "¿Qué se considera un primer paso para disminuir problemas en la cooperación procesal entre jurisdicciones, según las fuentes?",
+          "options": [
+            "La completa unificación de las legislaciones de los Estados miembros.",
+            "La armonización paulatina de algunas de las normas de los Estados miembros.",
+            "La creación de órganos judiciales supranacionales con competencia exclusiva.",
+            "La eliminación de las diferencias culturales entre los sistemas judiciales."
+          ],
+          "correct": 1
+        },
+        {
+          "question": "¿Cuál es el objetivo principal de la Directiva 2012/29/UE?",
+          "options": [
+            "La regulación de los conflictos de jurisdicción.",
+            "El perfeccionamiento de las garantías en los procesos penales.",
+            "El establecimiento de normas mínimas sobre los derechos, el apoyo y la protección de las víctimas de delitos.",
+            "La aproximación en materia de presunción de inocencia."
+          ],
+          "correct": 2
+        },
+        {
+          "question": "¿Qué función principal tiene EUROJUST?",
+          "options": [
+            "Dictar sentencias de carácter penal directamente aplicables en los Estados miembros.",
+            "Armonizar las legislaciones penales de los Estados miembros.",
+            "Intensificar la cooperación contra la delincuencia grave que afecte a varios Estados miembros, coordinando a las autoridades competentes.",
+            "Gestionar el Sistema Europeo de Antecedentes Penales (ECRIS)."
+          ],
+          "correct": 2
+        },
+        {
+          "question": "¿Qué son los Equipos Conjuntos de Investigación?",
+          "options": [
+            "Órganos judiciales permanentes de la Unión Europea.",
+            "Redes de puntos de contacto nacionales para la cooperación judicial.",
+            "Equipos compuestos por autoridades judiciales o policiales de al menos dos Estados miembros para realizar investigaciones específicas.",
+            "Tribunales internacionales encargados de juzgar delitos transfronterizos."
+          ],
+          "correct": 2
+        },
+        {
+          "question": "¿Qué diferencia fundamental existe entre el mero reconocimiento y la ejecución de una resolución judicial?",
+          "options": [
+            "El reconocimiento implica la ejecución coactiva, mientras que la ejecución no.",
+            "La ejecución implica el examen y aceptación de la resolución, además de la obtención coactiva de sus efectos.",
+            "El reconocimiento solo se aplica a resoluciones firmes, mientras que la ejecución se aplica a medidas previas a la sentencia.",
+            "No existe diferencia significativa entre ambos conceptos."
+          ],
+          "correct": 1
+        },
+        {
+          "question": "¿Qué instrumento de reconocimiento mutuo se regula en la Directiva 2014/41/CE para la obtención de prueba en el Espacio Judicial Europeo?",
+          "options": [
+            "La Orden Europea de Detención y Entrega.",
+            "La Orden Europea de Vigilancia.",
+            "La Orden Europea de Protección.",
+            "La Orden Europea de Investigación (OEI)."
+          ],
+          "correct": 3
+        },
+        {
+          "question": "¿Cuál es el objetivo principal de la Decisión Marco 2009/829/JAI?",
+          "options": [
+            "Regular la ejecución de penas privativas de libertad en la UE.",
+            "Establecer normas para el reconocimiento de resoluciones sobre medidas de vigilancia como alternativa a la prisión provisional.",
+            "Facilitar el reconocimiento mutuo de sanciones pecuniarias.",
+            "Regular el decomiso de bienes relacionados con el delito."
+          ],
+          "correct": 1
+        },
+        {
+          "question": "¿A qué tipo de resoluciones firmes se refiere principalmente la Decisión marco 2008/909/JAI?",
+          "options": [
+            "A las penas pecuniarias.",
+            "A las medidas accesorias de decomiso.",
+            "A las penas privativas de libertad.",
+            "A las penas de inhabilitación."
+          ],
+          "correct": 2
+        },
+        {
+          "question": "¿Qué busca facilitar la Decisión marco 2008/947/JAI?",
+          "options": [
+            "El reconocimiento mutuo de resoluciones de decomiso.",
+            "El reconocimiento mutuo de sanciones pecuniarias.",
+            "La aplicación del principio de reconocimiento mutuo de sentencias y resoluciones de libertad vigilada con miras a la vigilancia de las medidas de libertad vigilada y las penas sustitutivas.",
+            "El reconocimiento mutuo de resoluciones dictadas a raíz de juicios celebrados sin comparecencia del imputado."
+          ],
+          "correct": 2
+        }
+      ],
+      "tema3": [
+        {
+          "question": "¿Cuál es el principal objetivo de la Orden Europea de Detención y Entrega?",
+          "options": [
+            "Regular la extradición entre todos los países.",
+            "Eliminar la extradición entre los Estados miembros de la Unión Europea.",
+            "Establecer relaciones políticas más estrechas entre los Estados miembros.",
+            "Armonizar las leyes penales de todos los países europeos."
+          ],
+          "correct": 1
+        },
+        {
+          "question": "¿En qué documento normativo principal se regula la Orden Europea de Detención y Entrega a nivel de la Unión Europea?",
+          "options": [
+            "El Tratado de Lisboa.",
+            "La Carta de los Derechos Fundamentales de la Unión Europea.",
+            "La Decisión Marco 2002/584/JAI del Consejo.",
+            "El Convenio Europeo de Derechos Humanos."
+          ],
+          "correct": 2
+        },
+        {
+          "question": "Según las fuentes, ¿qué principio comunitario es fundamental para la Orden Europea de Detención y Entrega?",
+          "options": [
+            "Principio de subsidiariedad.",
+            "Principio de proporcionalidad.",
+            "Principio de reconocimiento mutuo.",
+            "Principio de libre circulación de personas."
+          ],
+          "correct": 2
+        },
+        {
+          "question": "¿Quién dicta la Orden Europea de Detención y Entrega?",
+          "options": [
+            "La policía.",
+            "El ministerio de justicia.",
+            "Una resolución judicial.",
+            "El jefe de estado."
+          ],
+          "correct": 2
+        },
+        {
+          "question": "¿Para qué fines se puede emitir una Orden Europea de Detención y Entrega según las fuentes?",
+          "options": [
+            "Solo para el cumplimiento de condenas.",
+            "Solo para el ejercicio de acciones penales.",
+            "Tanto para el ejercicio de acciones penales como para la ejecución de penas.",
+            "Para investigaciones administrativas."
+          ],
+          "correct": 2
+        },
+        {
+          "question": "¿Qué significó la Decisión Marco para el panorama normativo de la entrega de personas entre los Estados miembros de la UE?",
+          "options": [
+            "Lo complicó aún más.",
+            "Lo mantuvo igual.",
+            "Representó una simplificación significativa.",
+            "Lo adaptó a las normas internacionales."
+          ],
+          "correct": 2
+        },
+        {
+          "question": "Antes de la Orden Europea de Detención y Entrega, ¿qué figura jurídica regulaba la entrega de personas entre estados?",
+          "options": [
+            "La deportación.",
+            "La expulsión.",
+            "La extradición.",
+            "El traslado."
+          ],
+          "correct": 2
+        },
+        {
+          "question": "¿Cuál es la vía principal para la transmisión de una Orden Europea de Detención y Entrega entre autoridades judiciales?",
+          "options": [
+            "A través de Interpol.",
+            "A través de las embajadas.",
+            "La transmisión directa entre autoridades judiciales.",
+            "A través del Sistema de Información de Schengen (SIS)."
+          ],
+          "correct": 2
+        },
+        {
+          "question": "¿Qué requisito relativo a la tipificación del delito existía generalmente en la extradición y cómo se trata en la Orden Europea de Detención y Entrega?",
+          "options": [
+            "No existía ningún requisito especial; se mantiene un principio de doble incriminación para todos los delitos en la OEDE.",
+            "Existía el requisito de doble incriminación; en la OEDE se elimina para todos los delitos.",
+            "Existía el requisito de doble incriminación; en la OEDE se mantiene para todos los delitos.",
+            "Existía el requisito de doble incriminación; en la OEDE se establece un sistema mixto con un listado de delitos donde no se exige."
+          ],
+          "correct": 3
+        },
+        {
+          "question": "¿Qué información esencial debe incluir el formulario de una Orden Europea de Detención y Entrega?",
+          "options": [
+            "Solo la identidad de la persona reclamada y el delito.",
+            "La identidad y nacionalidad de la persona reclamada, los datos de la autoridad judicial de emisión y la existencia de una resolución judicial firme.",
+            "Solo los datos de la autoridad judicial de emisión y la pena impuesta.",
+            "Un resumen político de la situación del Estado de emisión."
+          ],
+          "correct": 1
+        },
+        {
+          "question": "¿En qué supuestos desaparece la exigencia del principio de doble incriminación en la Orden Europea de Detención y Entrega?",
+          "options": [
+            "En todos los delitos castigados con pena de prisión.",
+            "En un listado positivo de 32 delitos siempre que el delito esté castigado con una pena máxima de al menos tres años en el Estado de emisión.",
+            "En delitos graves como el terrorismo y el crimen organizado.",
+            "En delitos que hayan sido cometidos en el territorio del Estado de ejecución."
+          ],
+          "correct": 1
+        },
+        {
+          "question": "En España, ¿qué autoridades judiciales son competentes para ejecutar una Orden Europea de Detención y Entrega?",
+          "options": [
+            "Los Juzgados de Primera Instancia.",
+            "Los Tribunales Superiores de Justicia.",
+            "Los Juzgados Centrales de Instrucción de la Audiencia Nacional y el Juez Central de Menores.",
+            "El Tribunal Supremo."
+          ],
+          "correct": 2
+        },
+        {
+          "question": "¿Cuál es el plazo general para tomar una decisión judicial sobre la entrega de una persona si no hay consentimiento por parte del reclamado?",
+          "options": [
+            "24 horas.",
+            "10 días.",
+            "60 días desde la detención.",
+            "3 meses."
+          ],
+          "correct": 2
+        },
+        {
+          "question": "¿Qué ocurre si transcurren los plazos máximos para la entrega efectiva y la persona no ha sido recibida por el Estado de emisión?",
+          "options": [
+            "Se prorroga automáticamente el plazo por un periodo igual.",
+            "La persona es puesta en libertad, sin que esto impida una posterior orden basada en los mismos hechos.",
+            "Se informa a Interpol para que gestione la entrega.",
+            "El Estado de ejecución puede juzgar a la persona por los hechos."
+          ],
+          "correct": 1
+        },
+        {
+          "question": "¿Puede utilizarse la Orden Europea de Detención y Entrega como una diligencia de investigación o prueba?",
+          "options": [
+            "No, su única finalidad es la entrega para enjuiciamiento o ejecución de penas.",
+            "Sí, permitiendo el traslado temporal de la persona reclamada al Estado de emisión para la práctica de diligencias o la toma de declaración.",
+            "Solo si la persona reclamada da su consentimiento expreso.",
+            "Solo en casos de delitos graves como terrorismo."
+          ],
+          "correct": 1
+        }
+      ],
+      "tema4": [
+        {
+          "question": "¿Cuál fue el principal objetivo inicial de la creación de la Unión Europea?",
+          "options": [
+            "Protección de los derechos humanos",
+            "Integración política total",
+            "Integración fundamentalmente económica",
+            "Cooperación militar"
+          ],
+          "correct": 2
+        },
+        {
+          "question": "¿Cómo se materializó la idea de la Fiscalía Europea?",
+          "options": [
+            "Por decisión unánime de todos los Estados miembros",
+            "Por la mayoría simple del Parlamento Europeo",
+            "Con base en la mayoría reforzada del art. 86 TFUE",
+            "Por iniciativa exclusiva del Tribunal de Justicia de la Unión Europea"
+          ],
+          "correct": 2
+        },
+        {
+          "question": "¿Qué tipo de delitos investiga principalmente la Fiscalía Europea?",
+          "options": [
+            "Delitos contra las personas",
+            "Delitos fiscales directos nacionales",
+            "Delitos que afecten gravemente a los intereses financieros de la Unión Europea",
+            "Delitos relacionados con la seguridad del Estado"
+          ],
+          "correct": 2
+        },
+        {
+          "question": "¿En qué año se aprobó el Reglamento que estableció la Fiscalía Europea?",
+          "options": [
+            "2001",
+            "2013",
+            "2017",
+            "2021"
+          ],
+          "correct": 2
+        },
+        {
+          "question": "¿Qué principio fundamental rige la actuación de la Fiscalía Europea?",
+          "options": [
+            "Dependencia jerárquica de los Estados miembros",
+            "Total discrecionalidad en sus investigaciones",
+            "Independencia",
+            "Subordinación al Consejo Europeo"
+          ],
+          "correct": 2
+        },
+        {
+          "question": "¿Cómo se describe la estructura de la Fiscalía Europea en cuanto a su organización?",
+          "options": [
+            "Estructura puramente centralizada",
+            "Estructura completamente descentralizada",
+            "Estructura descentralizada pero sometida al principio de unidad",
+            "Estructura variable según los Estados miembros"
+          ],
+          "correct": 2
+        },
+        {
+          "question": "¿Quién compone el Colegio de Fiscales Europeos?",
+          "options": [
+            "El Fiscal General Europeo y sus adjuntos",
+            "Un representante de cada institución europea",
+            "El Fiscal General Europeo y un fiscal europeo representante de cada Estado miembro participante",
+            "Los Fiscales Europeos Delegados de cada Estado miembro"
+          ],
+          "correct": 2
+        },
+        {
+          "question": "¿Cuál es una de las responsabilidades de las Salas Permanentes de la Fiscalía Europea?",
+          "options": [
+            "Investigar directamente los delitos más graves",
+            "Adoptar leyes penales europeas",
+            "Repartir los asuntos entre los fiscales europeos delegados",
+            "Juzgar los casos remitidos por los fiscales europeos delegados"
+          ],
+          "correct": 2
+        },
+        {
+          "question": "¿Quién designa a los Fiscales Europeos?",
+          "options": [
+            "El Parlamento Europeo",
+            "El Consejo Europeo",
+            "El Tribunal de Justicia de la Unión Europea",
+            "Son nombrados entre miembros en activo del Ministerio Fiscal o de la judicatura de cada Estado miembro"
+          ],
+          "correct": 3
+        },
+        {
+          "question": "¿Quiénes son los encargados del trabajo operativo de la Fiscalía Europea?",
+          "options": [
+            "El Fiscal General Europeo",
+            "Los Fiscales Adjuntos",
+            "Los Fiscales Europeos Delegados",
+            "El Director Administrativo"
+          ],
+          "correct": 2
+        },
+        {
+          "question": "¿Qué directiva define los delitos respecto de los cuales la Fiscalía Europea es competente?",
+          "options": [
+            "Directiva sobre blanqueo de capitales",
+            "Directiva PIF (Protección de los Intereses Financieros)",
+            "Directiva sobre cooperación policial",
+            "Directiva sobre terrorismo"
+          ],
+          "correct": 1
+        },
+        {
+          "question": "¿Bajo qué condición específica se activa la competencia de la Fiscalía Europea para delitos de fraude en materia de recursos propios del IVA?",
+          "options": [
+            "Cuando el perjuicio sea superior a 1 millón de euros",
+            "Cuando el delito afecte a un solo Estado miembro",
+            "Cuando el delito afecte a dos o más Estados miembros y el perjuicio sea superior a 10 millones de euros",
+            "Cuando lo decida el Fiscal General Europeo"
+          ],
+          "correct": 2
+        },
+        {
+          "question": "¿Qué principio determina el desarrollo de las investigaciones de la Fiscalía Europea?",
+          "options": [
+            "El principio de nacionalidad del autor del delito",
+            "El principio de subsidiariedad",
+            "El principio de territorialidad",
+            "El principio de cooperación leal"
+          ],
+          "correct": 2
+        },
+        {
+          "question": "¿Qué institución española será generalmente competente para el conocimiento y fallo de los procedimientos en los que actúe la Fiscalía Europea?",
+          "options": [
+            "Los juzgados de primera instancia",
+            "Los tribunales superiores de justicia",
+            "La Audiencia Nacional",
+            "El Tribunal Supremo"
+          ],
+          "correct": 2
+        },
+        {
+          "question": "¿Qué órgano jurisdiccional de la Unión Europea es competente para pronunciarse prejudicialmente sobre la validez de los actos procesales de la Fiscalía Europea?",
+          "options": [
+            "El Parlamento Europeo",
+            "El Consejo Europeo",
+            "El Tribunal de Justicia",
+            "El Tribunal de Cuentas Europeo"
+          ],
+          "correct": 2
+        }
+      ],
+      "tema5": [
+        {
+          "question": "¿Qué documento estableció la Corte Penal Internacional?",
+          "options": [
+            "La Carta de las Naciones Unidas",
+            "El Estatuto de Londres",
+            "El Estatuto de Roma",
+            "La Declaración Universal de Derechos Humanos"
+          ],
+          "correct": 2
+        },
+        {
+          "question": "¿En qué fecha entró en vigor el Estatuto de Roma?",
+          "options": [
+            "1 de enero de 2000",
+            "1 de julio de 2000",
+            "1 de enero de 2002",
+            "1 de julio de 2002"
+          ],
+          "correct": 3
+        },
+        {
+          "question": "¿Cuál es la sede de la Corte Penal Internacional?",
+          "options": [
+            "Nueva York",
+            "Ginebra",
+            "La Haya (Países Bajos)",
+            "Bruselas"
+          ],
+          "correct": 2
+        },
+        {
+          "question": "¿Bajo qué principio fundamental funciona la Corte Penal Internacional?",
+          "options": [
+            "Principio de jurisdicción universal",
+            "Principio de territorialidad",
+            "Principio de complementariedad",
+            "Principio de inmunidad soberana"
+          ],
+          "correct": 2
+        },
+        {
+          "question": "¿Quién elige a los magistrados de la Corte Penal Internacional?",
+          "options": [
+            "El Consejo de Seguridad de las Naciones Unidas",
+            "El Fiscal de la CPI",
+            "La Asamblea de los Estados Parte",
+            "La Presidencia de la CPI"
+          ],
+          "correct": 2
+        },
+        {
+          "question": "¿Cuál es la duración del mandato de un magistrado de la CPI?",
+          "options": [
+            "6 años renovables",
+            "9 años no renovables",
+            "12 años no renovables",
+            "7 años renovables"
+          ],
+          "correct": 1
+        },
+        {
+          "question": "¿Sobre qué tipo de personas ejerce jurisdicción la CPI?",
+          "options": [
+            "Estados",
+            "Organizaciones internacionales",
+            "Personas físicas mayores de 18 años",
+            "Grupos armados no estatales"
+          ],
+          "correct": 2
+        },
+        {
+          "question": "¿Cuáles son los crímenes principales sobre los que tiene competencia la CPI según el Estatuto de Roma?",
+          "options": [
+            "Genocidio y crímenes de guerra",
+            "Lesa humanidad y crímenes de agresión",
+            "Genocidio, lesa humanidad, crímenes de guerra y crimen de agresión",
+            "Terrorismo y piratería"
+          ],
+          "correct": 2
+        },
+        {
+          "question": "¿Cuál es el órgano de la CPI responsable de investigar y ejercer la acción penal?",
+          "options": [
+            "La Presidencia",
+            "La Secretaría",
+            "Las Secciones",
+            "La Fiscalía"
+          ],
+          "correct": 3
+        },
+        {
+          "question": "¿Qué función tiene la Asamblea de los Estados Parte con respecto a la CPI?",
+          "options": [
+            "Ejercer la función jurisdiccional",
+            "Investigar los crímenes",
+            "Efectivizar y supervisar la actividad de la Corte",
+            "Ejecutar las sentencias"
+          ],
+          "correct": 2
+        },
+        {
+          "question": "Según el principio de complementariedad, ¿cuándo puede la CPI ejercer su jurisdicción?",
+          "options": [
+            "Siempre que se cometan crímenes de su competencia",
+            "Cuando el Consejo de Seguridad de la ONU lo solicite",
+            "Cuando el Estado no quiera o no pueda perseguir los delitos de su competencia",
+            "Cuando los crímenes sean de especial gravedad"
+          ],
+          "correct": 2
+        },
+        {
+          "question": "¿En qué dos supuestos puede la CPI ejercer jurisdicción sobre el territorio de un Estado que no es parte del Estatuto de Roma?",
+          "options": [
+            "Cuando el crimen lo comete un nacional de un Estado parte o cuando el Consejo de Seguridad lo autoriza",
+            "Cuando el Estado no parte consiente la competencia o cuando el Consejo de Seguridad de las Naciones Unidas remite el caso al Fiscal",
+            "Cuando los crímenes afectan a un gran número de víctimas o cuando lo solicita la Asamblea General de la ONU",
+            "Cuando los crímenes son cometidos por jefes de Estado o cuando el Estado donde se cometieron los hechos no tiene un sistema judicial funcional"
+          ],
+          "correct": 1
+        },
+        {
+          "question": "¿Cuál es el papel de la Sala de Cuestiones Preliminares en el procedimiento ante la CPI?",
+          "options": [
+            "Dictar la sentencia final en los casos",
+            "Ejecutar las órdenes de detención",
+            "Supervisar la actividad de la Fiscalía en la investigación y determinar si hay suficientes pruebas para el juicio oral",
+            "Resolver los recursos de apelación"
+          ],
+          "correct": 2
+        },
+        {
+          "question": "¿Qué puede ocurrir si la Sala de Cuestiones Preliminares no confirma los cargos presentados por el Fiscal?",
+          "options": [
+            "El caso se archiva definitivamente",
+            "El Fiscal puede solicitar de nuevo la confirmación aportando otras pruebas",
+            "El acusado es automáticamente declarado inocente",
+            "El caso pasa directamente a la Sala de Apelaciones"
+          ],
+          "correct": 1
+        },
+        {
+          "question": "¿En qué se puede fundamentar un recurso de apelación contra una sentencia de la Sala de Primera Instancia?",
+          "options": [
+            "En la opinión pública desfavorable al condenado",
+            "En la falta de acuerdo unánime de los magistrados",
+            "En vicios de procedimiento, errores de hecho o de derecho, o en una desproporción entre el crimen y la pena impuesta",
+            "Únicamente en la presentación de nuevas pruebas no disponibles durante el juicio oral"
+          ],
+          "correct": 2
+        }
+      ],
+      "tema6": [
+        {
+          "question": "¿Cuál es una característica esencial para la eficacia de los procesos penales internacionales de la Corte Penal Internacional?",
+          "options": [
+            "Su territorio propio y exclusivo",
+            "La cooperación procesal de los Estados",
+            "Su capacidad para actuar sin la ayuda de los Estados",
+            "La independencia total de las jurisdicciones nacionales"
+          ],
+          "correct": 1
+        },
+        {
+          "question": "¿Cuál es el documento normativo más importante en materia de cooperación con la CPI?",
+          "options": [
+            "La Ley Orgánica de cada Estado parte",
+            "Las resoluciones de la Asamblea General de la ONU",
+            "El Estatuto de Roma",
+            "Las Reglas de Procedimiento Penal Internacional"
+          ],
+          "correct": 2
+        },
+        {
+          "question": "¿Cómo se describe la relación entre la jurisdicción de la CPI y las jurisdicciones nacionales?",
+          "options": [
+            "De subordinación de las jurisdicciones nacionales a la CPI",
+            "De ejercicio exclusivo de la jurisdicción por la CPI",
+            "De coincidencia y necesidad de articulación, basada en el principio de complementariedad",
+            "De total independencia y separación"
+          ],
+          "correct": 2
+        },
+        {
+          "question": "Según el principio de complementariedad, ¿cuándo actuará la Corte Penal Internacional?",
+          "options": [
+            "Siempre que se cometan crímenes internacionales",
+            "Cuando los Estados lo soliciten expresamente",
+            "Cuando los Estados no quieran o no puedan perseguir los crímenes internacionales de su competencia",
+            "De forma simultánea con las jurisdicciones nacionales"
+          ],
+          "correct": 2
+        },
+        {
+          "question": "¿Qué se requiere de los Estados partes del Estatuto de Roma en cuanto a la cooperación con la Corte?",
+          "options": [
+            "Cooperar solo cuando lo consideren conveniente",
+            "La obligación general de cooperar plenamente",
+            "Cooperar únicamente en la fase de juicio",
+            "No están obligados a tener procedimientos internos aplicables"
+          ],
+          "correct": 1
+        },
+        {
+          "question": "¿De qué manera pueden los Estados iniciar el procedimiento de activación de la jurisdicción de la CPI?",
+          "options": [
+            "A través de sus tribunales nacionales",
+            "Mediante una decisión unilateral del jefe de Estado",
+            "Presentando una propuesta al Fiscal de la Corte",
+            "A través del Gobierno, mediante acuerdo del Consejo de Ministros"
+          ],
+          "correct": 3
+        },
+        {
+          "question": "¿Cuál es la principal vía de cooperación con la Corte Penal Internacional que asegura la presencia del acusado en el juicio?",
+          "options": [
+            "La práctica de prueba anticipada",
+            "La protección de víctimas y testigos",
+            "La detención y entrega del imputado",
+            "La ejecución de una mera orden de comparecencia"
+          ],
+          "correct": 2
+        },
+        {
+          "question": "¿Cómo se denomina la actividad obligatoria de cooperación procesal que consiste en el traslado coactivo de una persona imputada o condenada a la CPI?",
+          "options": [
+            "Extradición",
+            "Traslado interestatal",
+            "Entrega",
+            "Asistencia judicial"
+          ],
+          "correct": 2
+        },
+        {
+          "question": "¿Qué principio limita el enjuiciamiento o cumplimiento de condena de la persona entregada por hechos distintos a los que motivaron la entrega?",
+          "options": [
+            "Principio de legalidad",
+            "Principio de especialidad",
+            "Principio de jurisdicción universal",
+            "Principio de complementariedad"
+          ],
+          "correct": 1
+        },
+        {
+          "question": "¿Qué ocurre si la Corte Penal Internacional no adopta una medida de privación de libertad sino una orden de comparecencia?",
+          "options": [
+            "El Estado requerido no tiene obligación de actuar",
+            "El Estado requerido debe detener inmediatamente a la persona",
+            "El Estado requerido debe ejecutar el acto de comunicación",
+            "La orden de comparecencia se ignora hasta que haya una orden de detención"
+          ],
+          "correct": 2
+        },
+        {
+          "question": "¿Dónde se celebra ordinariamente el juicio ante la Corte Penal Internacional?",
+          "options": [
+            "En el Estado donde se cometió el crimen",
+            "En la sede de la ONU en Nueva York",
+            "En la ciudad neerlandesa de La Haya",
+            "En el Estado que haya iniciado el procedimiento"
+          ],
+          "correct": 2
+        },
+        {
+          "question": "En cuanto a la ejecución de las penas privativas de libertad impuestas por la CPI, ¿qué se requiere de los Estados?",
+          "options": [
+            "La ejecución automática en sus territorios",
+            "Un consentimiento específico para poner sus cárceles a disposición",
+            "La modificación de la pena según su legislación interna",
+            "La concesión de amnistías o indultos si lo consideran oportuno"
+          ],
+          "correct": 1
+        },
+        {
+          "question": "¿Qué ocurre si no hay Estados dispuestos a consentir la ejecución de penas privativas de libertad en sus cárceles?",
+          "options": [
+            "La CPI debe construir sus propias cárceles",
+            "El Estado donde fue detenido el condenado está obligado a ejecutar la pena",
+            "Se produce la designación subsidiaria y automática del Reino de los Países Bajos",
+            "La pena privativa de libertad se convierte en una multa"
+          ],
+          "correct": 2
+        },
+        {
+          "question": "¿Qué destino tienen los bienes o el valor de lo ejecutado en relación con multas y órdenes de decomiso impuestas por la CPI?",
+          "options": [
+            "Se distribuyen entre los Estados que cooperaron",
+            "Se utilizan para financiar el funcionamiento de la Corte",
+            "Se transfieren a la CPI, pudiendo destinarse a un fondo en beneficio de las víctimas",
+            "Permanecen en el Estado donde se realizó la ejecución"
+          ],
+          "correct": 2
+        },
+        {
+          "question": "En relación con la ejecución de medidas de resarcimiento impuestas por la CPI, ¿qué tipo de medida cautelar real se prevé para asegurar su cumplimiento?",
+          "options": [
+            "La prisión preventiva de los responsables",
+            "El embargo preventivo",
+            "La prohibición de salir del país de los afectados",
+            "La vigilancia electrónica de los bienes"
+          ],
+          "correct": 1
+        }
+      ]
+    };
+    
+    // Variables de estado
+    let questions = [];
+    let currentQuestionIndex = 0;
+    let score = 0;
+    
+    // Elementos del DOM
+    const themeSelect = document.getElementById('theme-select');
+    const startQuizBtn = document.getElementById('start-quiz-btn');
+    const startError = document.getElementById('start-error');
+    const quizSection = document.getElementById('quiz-section');
+    const quizContent = document.getElementById('quiz-content');
+    const questionNumber = document.getElementById('question-number');
+    const quizQuestionText = document.getElementById('quiz-question-text');
+    const quizOptions = document.getElementById('quiz-options');
+    const feedback = document.getElementById('feedback');
+    const nextQuestionBtn = document.getElementById('next-question-btn');
+    const restartQuizBtn = document.getElementById('restart-quiz-btn');
+    const quizResults = document.getElementById('quiz-results');
+    const restartQuizBtnEnd = document.getElementById('restart-quiz-btn-end');
+    
+    // Función para cargar el tema seleccionado
+    function loadSelectedTopic() {
+      const selectedTheme = themeSelect.value;
+      if (questionBank[selectedTheme] && questionBank[selectedTheme].length > 0) {
+        questions = JSON.parse(JSON.stringify(questionBank[selectedTheme]));
+        startError.classList.add('hidden');
+      } else {
+        startError.classList.remove('hidden');
+      }
+    }
+    
+    // Iniciar el quiz
+    function startQuiz() {
+      loadSelectedTopic();
+      if (questions.length === 0) return;
+      // Barajar aleatoriamente las preguntas
+      questions.sort(() => Math.random() - 0.5);
+      currentQuestionIndex = 0;
+      score = 0;
+      document.getElementById('topic-selection').classList.add('hidden');
+      startQuizBtn.classList.add('hidden');
+      quizResults.classList.add('hidden');
+      quizContent.classList.remove('hidden');
+      nextQuestionBtn.classList.add('hidden');
+      restartQuizBtn.classList.add('hidden');
+      quizSection.classList.remove('hidden');
+      displayQuestion();
+    }
+    
+    // Mostrar la pregunta actual
+    function displayQuestion() {
+      if (currentQuestionIndex >= questions.length) {
+        endQuiz();
+        return;
+      }
+      const currentQuestion = questions[currentQuestionIndex];
+      questionNumber.textContent = `Pregunta ${currentQuestionIndex + 1} de ${questions.length}`;
+      quizQuestionText.textContent = currentQuestion.question;
+      quizOptions.innerHTML = '';
+      feedback.classList.add('hidden');
+      nextQuestionBtn.classList.add('hidden');
+      restartQuizBtn.classList.add('hidden');
+    
+      currentQuestion.options.forEach((option, index) => {
+        const button = document.createElement('button');
+        button.textContent = option;
+        button.className = 'option-button block w-full text-left p-3 border border-gray-300 rounded-md hover:bg-gray-100';
+        button.dataset.index = index;
+        button.onclick = () => selectAnswer(index, button);
+        quizOptions.appendChild(button);
+      });
+    }
+    
+    // Procesar la respuesta seleccionada
+    function selectAnswer(selectedIndex, selectedButton) {
+      const optionButtons = quizOptions.querySelectorAll('.option-button');
+      optionButtons.forEach(btn => btn.disabled = true);
+      const correctIndex = questions[currentQuestionIndex].correct;
+      feedback.classList.remove('hidden');
+      if (selectedIndex === correctIndex) {
+        score++;
+        feedback.textContent = '¡Correcto!';
+        feedback.className = 'mt-4 p-3 rounded-md text-center font-medium bg-green-100 text-green-700';
+        selectedButton.classList.add('correct');
+      } else {
+        feedback.textContent = `Incorrecto. La respuesta correcta era: "${questions[currentQuestionIndex].options[correctIndex]}"`;
+        feedback.className = 'mt-4 p-3 rounded-md text-center font-medium bg-red-100 text-red-700';
+        selectedButton.classList.add('incorrect');
+        optionButtons.forEach(btn => {
+          if (parseInt(btn.dataset.index) === correctIndex) {
+            btn.classList.add('correct');
+          }
+        });
+      }
+      nextQuestionBtn.classList.remove('hidden');
+      restartQuizBtn.classList.remove('hidden');
+      nextQuestionBtn.textContent = (currentQuestionIndex === questions.length - 1) ? 'Ver Resultados Finales' : 'Siguiente Pregunta';
+    }
+    
+    // Pasar a la siguiente pregunta
+    function nextQuestion() {
+      currentQuestionIndex++;
+      displayQuestion();
+    }
+    
+    // Terminar el quiz y mostrar resultados
+    function endQuiz() {
+      quizContent.classList.add('hidden');
+      quizResults.classList.remove('hidden');
+      quizResults.querySelector('h3').textContent = "¡Cuestionario Completado!";
+      quizResults.querySelector('p').innerHTML = `Tu puntuación: <strong>${score}</strong> / <strong>${questions.length}</strong>`;
+    }
+    
+    // Reiniciar el quiz (volver a la selección de tema)
+    function restartQuiz() {
+      quizResults.classList.add('hidden');
+      quizContent.classList.remove('hidden');
+      document.getElementById('topic-selection').classList.remove('hidden');
+      startQuizBtn.classList.remove('hidden');
+      quizSection.classList.add('hidden');
+    }
+    
+    // Asignar listeners
+    startQuizBtn.addEventListener('click', startQuiz);
+    nextQuestionBtn.addEventListener('click', nextQuestion);
+    restartQuizBtn.addEventListener('click', restartQuiz);
+    restartQuizBtnEnd.addEventListener('click', restartQuiz);
+  </script>
+</body>
+</html>
