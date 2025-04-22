@@ -1938,6 +1938,8 @@
         const resultsSubjectSpan = document.getElementById('results-subject');
         const resultsTopicSpan = document.getElementById('results-topic');
         const restartButton = document.getElementById('restart-button'); // Botón de Reiniciar en resultados
+        const timerDisplaySpan = document.getElementById('timer-display'); // Elemento para mostrar el tiempo
+      
 
         // --- Estado del Quiz ---
         let currentSubjectKey = null;
@@ -1948,6 +1950,8 @@
         let currentQuestions = [];
         let currentTopicName = "";
         let currentSubjectName = "";
+        let timer = 30; // Tiempo inicial en segundos por pregunta
+        let timerInterval = null; // Para controlar el intervalo del temporizador
 
         // --- Funciones ---
 
@@ -1979,6 +1983,19 @@
             backButton.classList.add('hidden'); // Oculta el botón Volver general
             restartButton.classList.add('hidden'); // Oculta el botón Reiniciar de resultados
         }
+      /**
+ * Inicia y controla el temporizador de la pregunta.
+ */
+function startTimer() {
+    timerInterval = setInterval(() => {
+        timer--;
+        timerDisplaySpan.textContent = timer;
+        if (timer <= 0) {
+            clearInterval(timerInterval);
+            handleTimeout(); // Llama a una función si se acaba el tiempo
+        }
+    }, 1000); // Se ejecuta cada segundo (1000 ms)
+}
 
         /**
          * Maneja el cambio en el selector de asignatura principal.
@@ -2197,6 +2214,38 @@
          */
         function displayQuestion() {
             feedbackArea.classList.add('hidden'); // Oculta feedback anterior
+            clearInterval(timerInterval); // Limpia el intervalo anterior si existe
+timer = 30; // Reinicia el contador a 30 segundos
+timerDisplaySpan.textContent = timer; // Actualiza la visualización inicial
+startTimer(); // Inicia el nuevo temporizador
+          /**
+ * Maneja la situación cuando el tiempo se agota.
+ */
+function handleTimeout() {
+    const correctAnswer = currentQuestions[currentQuestionIndex].correctAnswer; // Obtiene la respuesta correcta
+
+    // Deshabilita opciones y muestra feedback incorrecto
+    const optionButtons = optionsContainer.querySelectorAll('button');
+    optionButtons.forEach(btn => {
+        btn.disabled = true;
+        if (btn.dataset.answer === correctAnswer) {
+            btn.classList.add('show-correct'); // Resalta la correcta
+        }
+    });
+
+    feedbackArea.classList.remove('hidden');
+    feedbackArea.innerHTML = `¡TIEMPO AGOTADO! RESPUESTA CORRECTA: <strong>${correctAnswer}</strong>`;
+    feedbackArea.className = 'feedback-incorrect';
+    document.getElementById('incorrect-sound').play(); // Reproduce sonido incorrecto
+
+    // Muestra botón siguiente/resultados
+    nextButton.classList.remove('hidden');
+     if (currentQuestionIndex === currentQuestions.length - 1) {
+         nextButton.textContent = 'VER RESULTADOS';
+     } else {
+         nextButton.textContent = 'SIGUIENTE';
+     }
+}
             feedbackArea.textContent = '';
             feedbackArea.className = ''; // Limpia clases de feedback
             nextButton.classList.add('hidden'); // Oculta botón Siguiente hasta que se responda
@@ -2248,6 +2297,7 @@
         function handleAnswer(event) {
             const selectedButton = event.currentTarget;
             const selectedAnswer = selectedButton.dataset.answer; // Letra seleccionada (A, B, C...)
+          clearInterval(timerInterval); // Detiene el temporizador
 
             // Asegura que la pregunta actual exista
             if (!currentQuestions[currentQuestionIndex]) {
@@ -2310,7 +2360,8 @@
         /**
          * Muestra la pantalla de resultados finales.
          */
-        function showResults() {
+        function showResults() { 
+          clearInterval(timerInterval); // Detiene el temporizador
             quizContainer.classList.add('hidden'); // Oculta el quiz
             resultsContainer.classList.remove('hidden'); // Muestra resultados
 
